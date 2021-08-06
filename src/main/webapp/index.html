@@ -1,0 +1,178 @@
+<html>
+<head>
+<link rel="shortcut icon" href="http://example.com/myicon.ico" />
+<link rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+	integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+	crossorigin="anonymous">
+<link rel="stylesheet" href="styles.css" />
+<script>
+	var rental = {};
+	document.addEventListener("DOMContentLoaded", function() {
+		console.log("DOMContentLoaded");
+		var rentals = [];
+		var xhr = new XMLHttpRequest();
+		xhr.open("GET", "http://localhost:8080/MediaRental/servlet");
+		xhr.onreadystatechange = function()
+		{
+			if(xhr.readyState === 4)
+			{
+				JSON.parse(xhr.responseText).forEach(element =>
+				{
+					console.log(element);
+					rentals.push(element);
+					updateTable(element);
+				});
+			}
+		}
+		
+		xhr.send();
+		
+		document.getElementById("new-rental").addEventListener(
+				"click",
+				function(e) {
+					console.log("new-rental listener");
+					var name = document.getElementById("name").value;
+					var type = document.getElementById("type").value;
+					var price = document.getElementById("price").value;
+					var condition = document.getElementById("condition").value;
+					var rating = document.getElementById("rating").value;
+					var category = document.getElementById("category").value;
+
+					rental = {
+						rentalName : name,
+						rentalType : type,
+						price : price,
+						condition : condition,
+						rating : rating,
+						category : category
+					};
+					console.log(rental);
+					var xhrPost = new XMLHttpRequest();
+					xhrPost.open("POST",
+							"http://localhost:8080/MediaRental/servlet");		
+											
+					xhrPost.onreadystatechange = function() {
+						if (xhrPost.readyState === 4) {
+							updateTable(rental);
+							document.getElementById("name").value = null;
+							document.getElementById("type").value = null;
+							document.getElementById("price").value = null;
+							document.getElementById("condition").value = null;
+							document.getElementById("rating").value = null;
+							document.getElementById("category").value = null;
+						}
+					}
+					xhrPost.send(JSON.stringify(rental));
+					
+				});
+
+		document.getElementById("get-rental").addEventListener("click",
+				function() {
+					console.log("get-rental listener");
+				});
+
+		document.getElementById("change-rental").addEventListener("click",
+				function() {
+					console.log("change-rental listener");
+				});
+
+		document.getElementById("remove-rental").addEventListener("click",
+				function() {
+					console.log("remove-rental listener");
+					var xhrDelete = new XMLHttpRequest();
+					xhrDelete.onreadystatechange = function() {
+						if (xhrDelete.readyState === 4) {
+							var table = document.getElementById("rental-body")
+							while(table.firstChild){
+								table.removeChild(table.lastChild)
+							}
+							rentals = [];
+						}
+					}
+					xhrDelete.open("DELETE", "http://localhost:8080/MediaRental/servlet");
+					xhrDelete.send();
+					
+					
+				});
+		
+		var updateTable = function(rental) {
+            var row = document.createElement("TR");
+            var nameColumn = document.createElement("TD");
+            var typeColumn = document.createElement("TD");
+            var priceColumn = document.createElement("TD");
+            var conditionColumn = document.createElement("TD");
+            var ratingColumn = document.createElement("TD");
+            var categoryColumn = document.createElement("TD");
+            nameColumn.innerText = rental.rentalName;
+            typeColumn.innerText = rental.rentalType;
+            priceColumn.innerText = rental.price;
+            conditionColumn.innerText = rental.condition;
+            ratingColumn.innerText = rental.rating;
+            categoryColumn.innerText = rental.category;
+            row.appendChild(nameColumn);
+            row.appendChild(typeColumn);
+            row.appendChild(priceColumn);
+            row.appendChild(conditionColumn);
+            row.appendChild(ratingColumn);
+            row.appendChild(categoryColumn);
+            document.getElementById("rental-body").appendChild(row);
+        }
+	});
+</script>
+</head>
+<body>
+	<div class="row">
+		<div class="col-lg-6">
+			<h1>Media Rental</h1>
+			<!-- <form> -->
+			<div>
+				<label>Rental Name</label> <input type=text id="name" />
+			</div>
+			<div>
+				<label>Rental Type</label> <input type=text id="type" />
+			</div>
+			<div>
+				<label>Price</label> <input type=number id="price" />
+			</div>
+			<div>
+				<label>Condition</label> <input type=text id="condition" />
+			</div>
+			<div>
+				<label>Rating</label> <input type=number id="rating" />
+			</div>
+			<div>
+				<label>Category</label> <input type=text id="category" />
+			</div>
+			<div>
+				<input type="submit" id="new-rental" value="Create" />
+			</div>
+			<div>
+				<input type="submit" id="get-rental" value="Retrieve" />
+			</div>
+			<div>
+				<input type="submit" id="change-rental" value="Update" />
+			</div>
+			<div>
+				<input type="submit" id="remove-rental" value="Delete" />
+			</div>
+			<!-- </form> !-->
+		</div>
+		<div class="col-lg-6">
+			<table id = "rental-table">
+				<thead>
+				<tr>
+					<th>Rental Name</th>
+					<th>Rental Type</th>
+					<th>Price</th>
+					<th>Condition</th>
+					<th>Rating</th>
+					<th>Category</th>
+				</tr>
+				</thead>
+				<tbody id = "rental-body"></tbody>
+			</table>
+		</div>
+	</div>
+</body>
+</html>
